@@ -1,4 +1,4 @@
-#SEV-ES guide with no pre-attestation
+# SEV-ES guide with no pre-attestation
 
 This guide covers platform-specific setup for SEV(-ES) and walks through
 complete flows for attestation and encrypted images.
