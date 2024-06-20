@@ -31,8 +31,11 @@ To run the operator you must have an existing Kubernetes cluster that meets the 
 - Ensure a minimum of 8GB RAM and 4 vCPU for the Kubernetes cluster node
 - Only containerd runtime based Kubernetes clusters are supported with the current CoCo release
 - The minimum Kubernetes version should be 1.24
-- Ensure at least one Kubernetes node in the cluster is having the label `node-role.kubernetes.io/worker=`
+- Ensure at least one Kubernetes node in the cluster has the labels `node-role.kubernetes.io/worker=` and `node.kubernetes.io/worker=`
 - Ensure SELinux is disabled or not enforced (https://github.com/confidential-containers/operator/issues/115)
+- Ensure Docker is installed. Instructions can be found [here](https://docs.docker.com/engine/install/ubuntu/). Make sure to also install docker-compose with docker.
+- This guide assumes that you've already installed the [snp.sh](https://github.com/amd/sev-utils/tree/coco-202402240000) script, a tool that builds the required patched versions of qemu ovmf, and a linux kernel, tools you will need to create your COCO instance
+- Ensure that you've followed the steps to prepare the host as stated [here](https://github.com/AMDESE/AMDSEV/tree/snp-latest?tab=readme-ov-file#prepare-host). This will help prepare the machine for later when you want to work with platform-specific configurations such as SEV and SNP.
 
 For more details on the operator, including the custom resources managed by the operator, refer to the operator [docs](https://github.com/confidential-containers/operator).
 
@@ -133,12 +136,13 @@ kubectl get runtimeclass
 Output:
 ```
 NAME            HANDLER         AGE
-kata            kata            9m55s
-kata-clh        kata-clh        9m55s
-kata-clh-tdx    kata-clh-tdx    9m55s
-kata-qemu       kata-qemu       9m55s
-kata-qemu-tdx   kata-qemu-tdx   9m55s
-kata-qemu-sev   kata-qemu-sev   9m55s
+kata            kata-qemu       9m50s
+kata-clh        kata-clh        9m50s
+kata-clh-tdx    kata-clh-tdx    9m50s
+kata-qemu       kata-qemu       9m50s
+kata-qemu-sev   kata-qemu-sev   9m50s
+kata-qemu-snp   kata-qemu-snp   9m50s
+kata-qemu-tdx   kata-qemu-tdx   9m50s
 ```
 
 Details on each of the runtime classes:
@@ -166,9 +170,14 @@ enclave-cc      enclave-cc      9m55s
 While the operator deploys all the required binaries and artifacts and sets up runtime classes that use them,
 certain platforms may require additional configuration to enable confidential computing. For example, the host
 kernel and firmware might need to be configured.
-See the [guides](./guides) for more information.
+
+CoCo supports several TEE supported environments. See the [guides](./guides) for more information on using TEEs with CoCo.
+
+Refer to the following section to get instructions on how to run a CoCo workload with no pre-attestation.
 
 # Running a workload
+
+There are three possible use cases for CoCo. The first being SEV(ES) launch, SNP launch, and SEV(ES) legacy with pre attestation launch. For the former two, all that is required is the operator and the runtime class. The corresponding runtime class for launching with SEV is `kata-qemu-sev`, while SNP is `kata-qemu-snp`. Now that you've installed and deployed the operator, you can go on to creating a kubernetes service yaml file. The yaml file is a config file that determines and tells how your kubernetes pods should run and interact with other objects. 
 
 ## Creating a sample CoCo workload
 
@@ -197,6 +206,47 @@ spec:
 Setting the runtimeClassName is usually the only change needed to the pod yaml, but some platforms
 support additional annotations for configuring the enclave. See the [guides](./guides) for
 more details.
+
+For example, to create a CoCo workload that leverages AMD's SEV technology, we would alter the above yaml file by adding the annotation `io.katacontainers.config.pre_attestation.enabled: "false"`. And change the runtime class name from `kata` to `kata-qemu-sev`.
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+  annotations:
+    io.containerd.cri.runtime-handler: kata-qemu-sev
+    io.katacontainers.config.pre_attestation.enabled: "false"
+
+spec:
+  containers:
+  - image: bitnami/nginx:1.22.0
+    name: nginx
+  dnsPolicy: ClusterFirst
+  runtimeClassName: kata-qemu-sev
+```
+
+Similarly, the SNP yaml file would look like:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+  annotations:
+    io.containerd.cri.runtime-handler: kata-qemu-snp
+    io.katacontainers.config.pre_attestation.enabled: "false"
+
+spec:
+  containers:
+  - image: bitnami/nginx:1.22.0
+    name: nginx
+  dnsPolicy: ClusterFirst
+  runtimeClassName: kata-qemu-snp
+```
 
 With Confidential Containers, the workload container images are never downloaded on the host.
 For verifying that the container image doesn’t exist on the host you should log into the k8s node and ensure the following command returns an empty result:
