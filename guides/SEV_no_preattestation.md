@@ -35,7 +35,7 @@ Please refer to the prerequisites section to ensure your Kubernetes cluster meet
 When adding the worker label to your node, make sure to add both of the following annotations.
 
 ```
-kubectl label node "${ NODE_NAME}" node.kubernetes.io/worker= 2>/dev/null || true
+kubectl label node "${NODE_NAME}" node.kubernetes.io/worker= 2>/dev/null || true
 
 kubectl label node "${NODE_NAME}" node-role.kubernetes.io/worker= 2>/dev/null || true
 ```
