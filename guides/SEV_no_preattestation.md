@@ -22,7 +22,7 @@ To run the operator you must have an existing Kubernetes cluster that meets the 
 - The minimum Kubernetes version should be 1.24
 - Ensure at least one Kubernetes node in the cluster is having the label `node-role.kubernetes.io/worker=` and `node.kubernetes.io/worker=`
 - Ensure SELinux is disabled or not enforced (https://github.com/confidential-containers/operator/issues/115)
-- Ensure Docker is installed. Instructions can be found [here](https://docs.docker.com/engine/install/ubuntu/).
+- Ensure Docker is installed. Instructions can be found [here](https://docs.docker.com/engine/install/ubuntu/). Make sure to also install docker-compose with docker.
 
 For more details on the operator, including the custom resources managed by the operator, refer to the operator [docs](https://github.com/confidential-containers/operator).
 
@@ -54,3 +54,67 @@ The latest published release is v0.8.0. To deploy an operator with v0.8.0, use t
 ```
 kubectl apply -k github.com/confidential-containers/operator/config/release?ref=v0.8.0
 ```
+
+Use the following command to monitor the status of each pod. Wait until each pod has a status of running.
+
+```
+kubectl get pods -n confidential-containers-system --watch
+```
+
+## Create the custom resource
+
+Creating a custom resource installs the required CC runtime pieces into teh cluster node and creates the `RuntimeClasses`.
+
+```
+kubectl apply -k github.com/confidential-containers/operator/config/samples/ccruntime/<CCRUNTIME_OVERLAY>?ref=<RELEASE_VERSION>
+```
+
+The current present overlays are: `default` and `s390x`.
+
+```
+kubectl apply -k github.com/confidential-containers/operator/config/samples/ccruntime/<CCRUNTIME_OVERLAY>?ref=<RELEASE_VERSION>
+```
+
+The corresponding `v0.8.0` release for `x86_64` is default, so run:
+
+```
+kubectl apply -k github.com/confidential-containers/operator/config/samples/ccruntime/default?ref=v0.8.0
+```
+And to deploy `v0.8.0` release for `s390x`, run:
+```
+kubectl apply -k github.com/confidential-containers/operator/config/samples/ccruntime/s390x?ref=v0.8.0
+```
+Wait until each pod has a status of running, and use the following command again:
+
+```
+kubectl get pods -n confidential-containers-system --watch
+```
+
+## Verify installation
+
+Check the `RuntimeClasses` that got created.
+
+```
+kubectl get runtimeclass
+```
+Output:
+```
+NAME            HANDLER         AGE
+kata            kata-qemu       6d
+kata-clh        kata-clh        6d
+kata-clh-tdx    kata-clh-tdx    6d
+kata-qemu       kata-qemu       6d
+kata-qemu-sev   kata-qemu-sev   6d
+kata-qemu-snp   kata-qemu-snp   6d
+kata-qemu-tdx   kata-qemu-tdx   6d
+```
+
+Details on each of the runtime classes:
+
+- *kata* - standard kata runtime using the QEMU hypervisor including all CoCo building blocks for a non CC HW
+- *kata-clh* - standard kata runtime using the cloud hypervisor including all CoCo building blocks for a non CC HW
+- *kata-clh-tdx* - using the Cloud Hypervisor, with TD-Shim, and support for Intel TDX CC HW
+- *kata-qemu* - same as kata
+- *kata-qemu-tdx* - using QEMU, with TDVF, and support for Intel TDX CC HW, prepared for using Verdictd and EAA KBC.
+- *kata-qemu-sev* - using QEMU, and support for AMD SEV HW
+- *kata-qemu-snp* - using QEMU, and support for AMD SNP HW
