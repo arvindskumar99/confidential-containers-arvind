@@ -1,7 +1,10 @@
 # SEV-ES guide with no pre-attestation
 
 This guide covers platform-specific setup for SEV(-ES) and walks through
-complete flows to launch COCO with no pre-attestation.
+complete flows to launch COCO with no pre-attestation. This guide assumes 
+that you've already installed the [snp.sh](https://github.com/amd/sev-utils/tree/main/tools) 
+script, a tool that builds the required patched versions of qemu ovmf, and a linux kernel, 
+tools you will need to create your COCO instance without pre-attestation.
 
 # Installation
 
@@ -22,4 +25,5 @@ To run the operator you must have an existing Kubernetes cluster that meets the 
 
 For more details on the operator, including the custom resources managed by the operator, refer to the operator [docs](https://github.com/confidential-containers/operator).
 
+# Operator Installation
 
