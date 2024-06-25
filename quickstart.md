@@ -34,6 +34,8 @@ To run the operator you must have an existing Kubernetes cluster that meets the 
 - Ensure at least one Kubernetes node in the cluster has the labels `node-role.kubernetes.io/worker=` and `node.kubernetes.io/worker=`
 - Ensure SELinux is disabled or not enforced (https://github.com/confidential-containers/operator/issues/115)
 - Ensure Docker is installed. Instructions can be found [here](https://docs.docker.com/engine/install/ubuntu/). Make sure to also install docker-compose with docker.
+- This guide assumes that you've already installed the [snp.sh](https://github.com/amd/sev-utils/tree/coco-202402240000) script, a tool that builds the required patched versions of qemu ovmf, and a linux kernel, tools you will need to create your COCO instance
+- Ensure that you've followed the steps to prepare the host as stated [here](https://github.com/AMDESE/AMDSEV/tree/snp-latest?tab=readme-ov-file#prepare-host).
 
 For more details on the operator, including the custom resources managed by the operator, refer to the operator [docs](https://github.com/confidential-containers/operator).
 
