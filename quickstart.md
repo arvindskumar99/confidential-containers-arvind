@@ -133,12 +133,13 @@ kubectl get runtimeclass
 Output:
 ```
 NAME            HANDLER         AGE
-kata            kata            9m55s
-kata-clh        kata-clh        9m55s
-kata-clh-tdx    kata-clh-tdx    9m55s
-kata-qemu       kata-qemu       9m55s
-kata-qemu-tdx   kata-qemu-tdx   9m55s
-kata-qemu-sev   kata-qemu-sev   9m55s
+kata            kata-qemu       9m50s
+kata-clh        kata-clh        9m50s
+kata-clh-tdx    kata-clh-tdx    9m50s
+kata-qemu       kata-qemu       9m50s
+kata-qemu-sev   kata-qemu-sev   9m50s
+kata-qemu-snp   kata-qemu-snp   9m50s
+kata-qemu-tdx   kata-qemu-tdx   9m50s
 ```
 
 Details on each of the runtime classes:
@@ -166,9 +167,14 @@ enclave-cc      enclave-cc      9m55s
 While the operator deploys all the required binaries and artifacts and sets up runtime classes that use them,
 certain platforms may require additional configuration to enable confidential computing. For example, the host
 kernel and firmware might need to be configured.
-See the [guides](./guides) for more information.
+
+CoCo supports several TEE supported environments. See the [guides](./guides) for more information on using TEEs with CoCo.
+
+Refer to the following section to get instructions on how to run a CoCo workload with no pre-attestation.
 
 # Running a workload
+
+There are three possible use cases for CoCo. The first being SEV(ES) launch, SNP launch, and SEV(ES) legacy with pre attestation launch. For the former two, all that is required is the operator and the runtime class. The corresponding runtime class for launching with SEV is `kata-qemu-sev`, while SNP is `kata-qemu-snp`. Now that you've installed and deployed the operator, you can go on to creating a kubernetes service yaml file. The yaml file is a config file that determines and tells how your kubernetes pods should run and interact with other objects. 
 
 ## Creating a sample CoCo workload
 
