@@ -204,6 +204,47 @@ Setting the runtimeClassName is usually the only change needed to the pod yaml, 
 support additional annotations for configuring the enclave. See the [guides](./guides) for
 more details.
 
+For example, to create a CoCo workload that leverages AMD's SEV technology, we would alter the above yaml file by adding the annotation `io.katacontainers.config.pre_attestation.enabled: "false"`. And change the runtime class name from `kata` to `kata-qemu-sev`.
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+  annotations:
+    io.containerd.cri.runtime-handler: kata-qemu-sev
+    io.katacontainers.config.pre_attestation.enabled: "false"
+
+spec:
+  containers:
+  - image: bitnami/nginx:1.22.0
+    name: nginx
+  dnsPolicy: ClusterFirst
+  runtimeClassName: kata-qemu-sev
+```
+
+Similarly, the SNP yaml file would look like:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+  annotations:
+    io.containerd.cri.runtime-handler: kata-qemu-snp
+    io.katacontainers.config.pre_attestation.enabled: "false"
+
+spec:
+  containers:
+  - image: bitnami/nginx:1.22.0
+    name: nginx
+  dnsPolicy: ClusterFirst
+  runtimeClassName: kata-qemu-snp
+```
+
 With Confidential Containers, the workload container images are never downloaded on the host.
 For verifying that the container image doesn’t exist on the host you should log into the k8s node and ensure the following command returns an empty result:
 ```
